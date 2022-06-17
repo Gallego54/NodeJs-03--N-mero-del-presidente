@@ -1,6 +1,7 @@
 import http from 'http'
 import getView from './src/modules/path.js';
 import primeProvider from './src/modules/primeNumberProvider.js';
+import {searchCSS, insertCSS } from './src/modules/CSSsearcher.js';
 
 
 const PORT = 8000;
@@ -9,8 +10,10 @@ const PORT = 8000;
 http.createServer((req, res) => {
     res.writeHead(200, { 'Content-Type': 'text/html' })
     if (req.url === '/result') {
-        const HTML = getView(req.url);
-        const INDEX = HTML.search('body')+6;
+        const HTMLNOCSS = getView(req.url);
+        const CSS = searchCSS('./src/public/css/', 'style.css');
+        const HTML = insertCSS(HTMLNOCSS, CSS);
+        const INDEX = HTML.search('<body>')+'<body>'.length;
 
         getParams(req, (D) => {
             const primeConsulter = new primeProvider();
@@ -26,7 +29,12 @@ http.createServer((req, res) => {
 
         //return res.end(getView(req.url));
     } else {
-        return res.end(getView(req.url));
+        const HTMLNOCSS = getView(req.url);
+        const CSS = searchCSS('./src/public/css/', 'style.css');
+        const HTML = insertCSS(HTMLNOCSS, CSS);
+        const INDEX = HTML.search('<body>')+'<body>'.length;
+
+        return res.end(HTML);
     }
 
 }).listen(PORT, _ => {
@@ -39,12 +47,12 @@ http.createServer((req, res) => {
 
 
 const strArrayMapping = function(arr, bt){
-    var str = "";
+    var str = "<p class='numbers'>";
     arr.forEach(element => {
         str+=element+bt;
     }); 
 
-    return str.slice(0, str.length-2);
+    return str.slice(0, str.length-2)+'</p>';
 }
 
 const insertStr = function (STR, INDEX, DATA) {
